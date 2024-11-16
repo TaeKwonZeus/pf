@@ -1,48 +1,25 @@
 package pf
 
 import (
-	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 )
 
-type ResponseWriter[T any] struct {
-	w http.ResponseWriter
-}
-
-func (w *ResponseWriter[T]) JSON(response T) error {
-	w.w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w.w).Encode(response)
-}
-
-type Handler[Req, Res any] func(w ResponseWriter[Res], r *http.Request, body Req) error
+type Handler[Req, Res any] func(w ResponseWriter[Res], r *Request[Req]) error
 
 func (h Handler[Req, Res]) wrap() http.HandlerFunc {
-	var req [0]Req
-
-	switch any(req).(type) {
-	case [0]struct{}:
-		return func(w http.ResponseWriter, r *http.Request) {
-			var empty Req
-			err := h(ResponseWriter[Res]{w}, r, empty)
-			if err != nil {
-				handleError(w, err)
-			}
+	return func(w http.ResponseWriter, r *http.Request) {
+		req, err := ParseRequest[Req](r)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to parse request body: %v", err), http.StatusBadRequest)
+			return
 		}
-	default:
-		return func(w http.ResponseWriter, r *http.Request) {
-			var payload Req
-			err := json.NewDecoder(r.Body).Decode(&payload)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
 
-			err = h(ResponseWriter[Res]{w}, r, payload)
-			if err != nil {
-				handleError(w, err)
-			}
+		err = h(ResponseWriter[Res]{w}, req)
+		if err != nil {
+			handleError(w, err)
 		}
 	}
 }
@@ -65,22 +42,61 @@ func handleError(w http.ResponseWriter, err error) {
 type Router struct {
 }
 
-func NewRouter() *Router { return nil }
+func NewRouter() *Router {
+	return &Router{}
+}
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {}
 
-func Use(r *Router, middlewares ...Middleware) {}
+func handleErrorMiddleware(middleware Middleware) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			h, err := middleware(next)
+			if err != nil {
+				handleError(w, err)
+				return
+			}
 
-func Get[Res any](r *Router, path string, handler Handler[struct{}, Res]) {}
+			h.ServeHTTP(w, r)
+		})
+	}
+}
 
-func Post[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {}
+func Use(r *Router, middlewares ...Middleware) {
+}
 
-func Put[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {}
+func Get[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
+}
 
-func Delete[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {}
+func Post[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
+}
 
-func Patch[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {}
+func Put[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
+}
 
-func Group(r *Router, path string, fn func(r *Router)) {}
+func Delete[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
+}
 
-func Handle(r *Router, path string, handler http.Handler) {}
+func Patch[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
+}
+
+func Head(r *Router, path string, handler Handler[struct{}, struct{}]) {
+}
+
+func Options[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
+}
+
+func Trace[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
+}
+
+func Connect(r *Router, path string, handler Handler[struct{}, struct{}]) {
+}
+
+func Route(r *Router, path string, fn func(r *Router)) {
+}
+
+func Handle(r *Router, path string, handler http.Handler) {
+}
+
+func Mount(r *Router, path string, handler http.Handler) {
+}

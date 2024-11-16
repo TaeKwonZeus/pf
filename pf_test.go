@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func Ping(w ResponseWriter[string], r *http.Request, body struct{}) error {
-	return w.JSON("Pong!")
+func Ping(w ResponseWriter[string], r *Request[struct{}]) error {
+	return w.OK("Pong!")
 }
 
 func main() {

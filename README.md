@@ -10,19 +10,20 @@ package main
 import (
 	"github.com/TaeKwonZeus/pf"
 	"net/http"
+	"log/slog"
 )
 
-func Ping(w pf.ResponseWriter[string], r *http.Request, body struct{}) error {
-    return w.JSON("Pong!")
+func Ping(w pf.ResponseWriter[string], r *pf.Request[struct{}]) error {
+	return w.OK("Pong!")
 }
 
 func main() {
-    r := pf.NewRouter()
-    pf.Get(r, "/ping", Ping)
+	r := pf.NewRouter()
+	pf.Get(r, "/ping", Ping)
 
-    err := http.ListenAndServe(":8080", r)
-    if err != nil {
-        slog.Error("Error starting server", "err", err)
-    }
+	err := http.ListenAndServe(":8080", r)
+	if err != nil {
+		slog.Error("Error starting server", "err", err)
+	}
 }
 ```
