@@ -1,4 +1,4 @@
-# PROD Framework
+# PickmeTeam Framework
 
 Эта кароч либа для моей команды на проде ну чтобы не на джаве ну кароч
 
@@ -10,7 +10,7 @@ package main
 import (
 	"github.com/TaeKwonZeus/pf"
 	"net/http"
-	"log/slog"
+	"log"
 )
 
 func Ping(w pf.ResponseWriter[string], r *pf.Request[struct{}]) error {
@@ -23,7 +23,7 @@ func main() {
 
 	err := http.ListenAndServe(":8080", r)
 	if err != nil {
-		slog.Error("Error starting server", "err", err)
+		log.Fatal(err)
 	}
 }
 ```
