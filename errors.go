@@ -1,6 +1,10 @@
 package pf
 
-import "net/http"
+import (
+	"errors"
+	"log/slog"
+	"net/http"
+)
 
 type httpError int
 
@@ -51,3 +55,19 @@ var (
 	ErrNotExtended                   error = httpError(510)
 	ErrNetworkAuthenticationRequired error = httpError(511)
 )
+
+// HandleError handles any errors that might occur in handlers and middlewares. For errors defined in the package,
+// HandleError sets the appropriate status code and responds with the standard message. For other errors,
+// HandleError logs the error with slog.Error and responds with status code 500 and the standard message.
+func HandleError(w http.ResponseWriter, err error) {
+	var httpErr httpError
+	if errors.As(err, &httpErr) {
+		http.Error(w, httpErr.Error(), int(httpErr))
+		return
+	}
+
+	if err != nil {
+		slog.Error("Error in handler", "err", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+}
