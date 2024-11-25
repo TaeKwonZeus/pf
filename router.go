@@ -1,15 +1,16 @@
 package pf
 
 import (
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
-// 1st key: path
-// 2nd key: method
-type signatures map[string]map[string]*handlerSignature
+type method = string
 
-func (s signatures) add(path string, method string, signature *handlerSignature) {
+type signatures map[string]map[method]*handlerSignature
+
+func (s signatures) add(path string, method method, signature *handlerSignature) {
 	if s[path] == nil {
 		s[path] = make(map[string]*handlerSignature)
 	}
@@ -56,7 +57,7 @@ func Use(r *Router, middlewares ...func(next http.Handler) http.Handler) {
 	r.mux.Use(middlewares...)
 }
 
-func Method[Req, Res any](r *Router, method string, path string, handler Handler[Req, Res]) {
+func Method[Req, Res any](r *Router, method method, path string, handler Handler[Req, Res]) {
 	h, signature := handler.wrap()
 	r.mux.Method(method, path, h)
 	r.signatures.add(path, method, signature)

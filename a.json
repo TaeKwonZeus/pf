@@ -1,0 +1,87 @@
+{
+    "paths": {
+        "/get": {
+            "post": {
+                "consumes": [
+                    "encoding/json"
+                ],
+                "produces": [
+                    "encoding/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/TestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/TestResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "TestRequest": {
+            "type": "object",
+            "properties": {
+                "A": {
+                    "type": "object",
+                    "properties": {
+                        "Name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "B": {
+                    "$ref": "#/definitions/TestRequestField"
+                },
+                "C": {
+                    "type": "integer"
+                }
+            }
+        },
+        "TestRequestField": {
+            "type": "object",
+            "properties": {
+                "Desc": {
+                    "type": "string"
+                }
+            }
+        },
+        "TestResponse": {
+            "type": "object",
+            "properties": {
+                "A": {
+                    "type": "object",
+                    "properties": {
+                        "Name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "B": {
+                    "$ref": "#/definitions/TestResponseField"
+                },
+                "C": {
+                    "type": "integer"
+                }
+            }
+        },
+        "TestResponseField": {
+            "type": "object",
+            "properties": {
+                "Desc": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
