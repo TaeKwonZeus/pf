@@ -55,7 +55,7 @@ func createPathItem(methods map[method]*handlerSignature, structMap structMap) s
 		case http.MethodHead:
 			item.Head = op
 		default:
-			slog.Error("swagger: unsupported method", "method", method)
+			slog.Warn("swagger: unsupported method", "method", method)
 		}
 	}
 

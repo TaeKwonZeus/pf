@@ -91,14 +91,6 @@ func Options[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
 	Method(r, http.MethodOptions, path, handler)
 }
 
-func Trace[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
-	Method(r, http.MethodTrace, path, handler)
-}
-
-func Connect(r *Router, path string, handler Handler[struct{}, struct{}]) {
-	Method(r, http.MethodConnect, path, handler)
-}
-
 func Route(r *Router, path string, fn func(r *Router)) {
 	subrouter := NewRouter()
 	fn(subrouter)
