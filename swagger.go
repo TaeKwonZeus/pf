@@ -10,12 +10,75 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+type HandlerProperty func(op *spec.Operation)
+
+func WithSummary(summary string) HandlerProperty {
+	return func(op *spec.Operation) {
+		op.Summary = summary
+	}
+}
+
+func WithDescription(description string) HandlerProperty {
+	return func(op *spec.Operation) {
+		op.Description = description
+	}
+}
+
+func WithQuery(query ...string) HandlerProperty {
+	return func(op *spec.Operation) {
+		for _, q := range query {
+			op.Parameters = append(op.Parameters, spec.Parameter{
+				ParamProps: spec.ParamProps{
+					In:   "query",
+					Name: q,
+				},
+			})
+		}
+	}
+}
+
+type SwaggerInfo struct {
+	Title          string
+	Description    string
+	TermsOfService string
+	ContactName    string
+	ContactURL     string
+	ContactEmail   string
+	License        string
+	LicenseURL     string
+	Version        string
+}
+
+func toSpecInfo(i SwaggerInfo) *spec.Info {
+	return &spec.Info{
+		InfoProps: spec.InfoProps{
+			Title:          i.Title,
+			Description:    i.Description,
+			TermsOfService: i.TermsOfService,
+			Contact: &spec.ContactInfo{
+				ContactInfoProps: spec.ContactInfoProps{
+					Name:  i.ContactName,
+					URL:   i.ContactURL,
+					Email: i.ContactEmail,
+				},
+			},
+			License: &spec.License{
+				LicenseProps: spec.LicenseProps{
+					Name: i.License,
+					URL:  i.LicenseURL,
+				},
+			},
+			Version: i.Version,
+		},
+	}
+}
+
 type structMap map[reflect.Type]spec.Schema
 
-func GenerateSpec(signatures signatures, info spec.InfoProps) *spec.Swagger {
+func generateSpec(signatures signatures, info SwaggerInfo) *spec.Swagger {
 	var s spec.Swagger
 	s.Swagger = "2.0"
-	s.Info = &spec.Info{InfoProps: info}
+	s.Info = toSpecInfo(info)
 	s.Paths = &spec.Paths{Paths: make(map[string]spec.PathItem)}
 	s.Definitions = make(spec.Definitions)
 
@@ -87,6 +150,10 @@ func createOperation(sig *handlerSignature, structMap structMap) *spec.Operation
 				},
 			},
 		},
+	}
+
+	for _, prop := range sig.props {
+		prop(&operation)
 	}
 
 	return &operation

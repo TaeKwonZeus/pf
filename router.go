@@ -57,38 +57,38 @@ func Use(r *Router, middlewares ...func(next http.Handler) http.Handler) {
 	r.mux.Use(middlewares...)
 }
 
-func Method[Req, Res any](r *Router, method method, path string, handler Handler[Req, Res]) {
-	h, signature := handler.wrap()
+func Method[Req, Res any](r *Router, method method, path string, handler Handler[Req, Res], props ...HandlerProperty) {
+	h, signature := handler.wrap(props)
 	r.mux.Method(method, path, h)
 	r.signatures.add(path, method, signature)
 }
 
-func Get[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
-	Method(r, http.MethodGet, path, handler)
+func Get[Res any](r *Router, path string, handler Handler[struct{}, Res], props ...HandlerProperty) {
+	Method(r, http.MethodGet, path, handler, props...)
 }
 
-func Post[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
-	Method(r, http.MethodPost, path, handler)
+func Post[Req, Res any](r *Router, path string, handler Handler[Req, Res], props ...HandlerProperty) {
+	Method(r, http.MethodPost, path, handler, props...)
 }
 
-func Put[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
-	Method(r, http.MethodPut, path, handler)
+func Put[Req, Res any](r *Router, path string, handler Handler[Req, Res], props ...HandlerProperty) {
+	Method(r, http.MethodPut, path, handler, props...)
 }
 
-func Delete[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
-	Method(r, http.MethodDelete, path, handler)
+func Delete[Req, Res any](r *Router, path string, handler Handler[Req, Res], props ...HandlerProperty) {
+	Method(r, http.MethodDelete, path, handler, props...)
 }
 
-func Patch[Req, Res any](r *Router, path string, handler Handler[Req, Res]) {
-	Method(r, http.MethodPatch, path, handler)
+func Patch[Req, Res any](r *Router, path string, handler Handler[Req, Res], props ...HandlerProperty) {
+	Method(r, http.MethodPatch, path, handler, props...)
 }
 
-func Head(r *Router, path string, handler Handler[struct{}, struct{}]) {
-	Method(r, http.MethodHead, path, handler)
+func Head(r *Router, path string, handler Handler[struct{}, struct{}], props ...HandlerProperty) {
+	Method(r, http.MethodHead, path, handler, props...)
 }
 
-func Options[Res any](r *Router, path string, handler Handler[struct{}, Res]) {
-	Method(r, http.MethodOptions, path, handler)
+func Options[Res any](r *Router, path string, handler Handler[struct{}, Res], props ...HandlerProperty) {
+	Method(r, http.MethodOptions, path, handler, props...)
 }
 
 func Route(r *Router, path string, fn func(r *Router)) {

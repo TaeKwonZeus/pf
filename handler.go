@@ -11,9 +11,11 @@ type Handler[Req, Res any] func(w ResponseWriter[Res], r *Request[Req]) error
 type handlerSignature struct {
 	reqType reflect.Type
 	resType reflect.Type
+
+	props []HandlerProperty
 }
 
-func (h Handler[Req, Res]) wrap() (http.HandlerFunc, *handlerSignature) {
+func (h Handler[Req, Res]) wrap(props []HandlerProperty) (http.HandlerFunc, *handlerSignature) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		req, err := ParseRequest[Req](r)
 		if err != nil {
@@ -33,5 +35,6 @@ func (h Handler[Req, Res]) wrap() (http.HandlerFunc, *handlerSignature) {
 	return handler, &handlerSignature{
 		reqType: reflect.TypeOf(emptyReq).Elem(),
 		resType: reflect.TypeOf(emptyRes).Elem(),
+		props:   props,
 	}
 }
