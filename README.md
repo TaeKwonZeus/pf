@@ -1,4 +1,4 @@
-# PickmeTeam Framework
+# Pickme Framework
 
 Эта кароч либа для моей команды на проде ну чтобы не на джаве ну кароч
 
