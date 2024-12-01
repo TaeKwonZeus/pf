@@ -10,20 +10,25 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+// HandlerProperty represents a modification to the handler's metadata
+// (summary, description etc.) for Swagger.
 type HandlerProperty func(op *spec.Operation)
 
+// WithSummary sets the handler's summary.
 func WithSummary(summary string) HandlerProperty {
 	return func(op *spec.Operation) {
 		op.Summary = summary
 	}
 }
 
+// WithSummary sets the handler's description.
 func WithDescription(description string) HandlerProperty {
 	return func(op *spec.Operation) {
 		op.Description = description
 	}
 }
 
+// WithSummary adds query parameters to the handler's metadata.
 func WithQuery(query ...string) HandlerProperty {
 	return func(op *spec.Operation) {
 		for _, q := range query {
@@ -37,6 +42,21 @@ func WithQuery(query ...string) HandlerProperty {
 	}
 }
 
+// WithConsumes sets the MIME type the handler expects as the request body.
+func WithConsumes(mime string) HandlerProperty {
+	return func(op *spec.Operation) {
+		op.Consumes = []string{mime}
+	}
+}
+
+// WithProduces sets the MIME type the handler produces as a response.
+func WithProduces(mime string) HandlerProperty {
+	return func(op *spec.Operation) {
+		op.Produces = []string{mime}
+	}
+}
+
+// SwaggerInfo represents metadata about the API.
 type SwaggerInfo struct {
 	Title          string
 	Description    string
@@ -126,37 +146,48 @@ func createPathItem(methods map[method]*handlerSignature, structMap structMap) s
 }
 
 func createOperation(sig *handlerSignature, structMap structMap) *spec.Operation {
-	var operation spec.Operation
+	var op spec.Operation
 
 	switch sig.reqType {
-	case reflect.TypeOf(struct{}{}):
-	case reflect.TypeOf(&multipart.Form{}):
-		operation.Consumes = []string{"multipart/form-data"}
+	case reflect.TypeFor[struct{}]():
+	case reflect.TypeFor[*multipart.Form]():
+		op.Consumes = []string{"multipart/form-data"}
 	default:
-		operation.Consumes = []string{"encoding/json"}
+		op.Consumes = []string{"application/json"}
 		req := getType(sig.reqType, structMap)
-		operation.Parameters = append(operation.Parameters, *spec.BodyParam("body", &req))
+		op.Parameters = append(op.Parameters, *spec.BodyParam("body", &req))
 	}
 
-	// TODO add non-JSON responses
-	operation.Produces = []string{"encoding/json"}
-
-	res := getType(sig.resType, structMap)
-	operation.Responses = &spec.Responses{
-		ResponsesProps: spec.ResponsesProps{
-			Default: &spec.Response{
-				ResponseProps: spec.ResponseProps{
-					Schema: &res,
-				},
-			},
-		},
+	if sig.resType != reflect.TypeFor[struct{}]() {
+		describeResponse(&op, sig.resType, structMap)
 	}
 
 	for _, prop := range sig.props {
-		prop(&operation)
+		prop(&op)
 	}
 
-	return &operation
+	return &op
+}
+
+func describeResponse(op *spec.Operation, typ reflect.Type, structMap structMap) {
+	switch typ {
+	case reflect.TypeFor[[]byte]():
+		op.Produces = []string{"application/octet-stream"}
+	case reflect.TypeFor[string]():
+		op.Produces = []string{"text/plain"}
+	default:
+		op.Produces = []string{"application/json"}
+		res := getType(typ, structMap)
+		op.Responses = &spec.Responses{
+			ResponsesProps: spec.ResponsesProps{
+				Default: &spec.Response{
+					ResponseProps: spec.ResponseProps{
+						Schema: &res,
+					},
+				},
+			},
+		}
+	}
 }
 
 // getType marshals a type into a spec.Schema.
