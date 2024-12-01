@@ -1,4 +1,4 @@
-module pf
+module github.com/TaeKwonZeus/pf
 
 go 1.23
 
