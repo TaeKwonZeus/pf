@@ -1,5 +1,7 @@
 # Pickme Framework
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/TaeKwonZeus/pf.svg)](https://pkg.go.dev/github.com/TaeKwonZeus/pf)
+
 Эта кароч либа для моей команды на проде ну чтобы не на джаве ну кароч
 
 ну типа пишешь ручки а она типа генерит сваггер и работает с ашипками ну кароч
