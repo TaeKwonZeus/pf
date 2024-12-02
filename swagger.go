@@ -116,7 +116,7 @@ func generateSpec(signatures signatures, info SwaggerInfo) *spec.Swagger {
 	return &s
 }
 
-func createPathItem(methods map[method]*handlerSignature, structMap structMap) spec.PathItem {
+func createPathItem(methods map[string]*handlerSignature, structMap structMap) spec.PathItem {
 	var item spec.PathItem
 
 	for method, sig := range methods {

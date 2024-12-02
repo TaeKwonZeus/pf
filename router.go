@@ -8,11 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type method = string
+type signatures map[string]map[string]*handlerSignature
 
-type signatures map[string]map[method]*handlerSignature
-
-func (s signatures) add(path string, method method, signature *handlerSignature) {
+func (s signatures) add(path string, method string, signature *handlerSignature) {
 	if s[path] == nil {
 		s[path] = make(map[string]*handlerSignature)
 	}
@@ -65,7 +63,7 @@ func Use(r *Router, middlewares ...func(next http.Handler) http.Handler) {
 // Method adds routes for path that matches the HTTP method specified by method.
 // Method also adds metadata, consisting of the request and response type,
 // as well as props, for use by Swagger and the like.
-func Method[Req, Res any](r *Router, method method, path string, handler Handler[Req, Res], props ...HandlerProperty) {
+func Method[Req, Res any](r *Router, method string, path string, handler Handler[Req, Res], props ...HandlerProperty) {
 	h, signature := handler.wrap(props)
 	r.mux.Method(method, path, h)
 	r.signatures.add(path, method, signature)
