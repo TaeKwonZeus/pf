@@ -110,6 +110,12 @@ func Handle(r *Router, path string, handler http.Handler) {
 	r.mux.Handle(path, handler)
 }
 
+// Handle routes handler to the path. You should not use this for regular
+// function handlers, as they won't show up in Swagger.
+func HandleFunc(r *Router, path string, handler http.HandlerFunc) {
+	r.mux.HandleFunc(path, handler)
+}
+
 // Mount mounts a sub-router along path.
 func Mount(r *Router, path string, subrouter *Router) {
 	r.mux.Mount(path, subrouter)

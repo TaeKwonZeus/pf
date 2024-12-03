@@ -1,14 +1,51 @@
 package pf
 
 import (
+	"bytes"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
+	"path"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-openapi/spec"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
+
+func AddSwagger(r *Router, endpoint string, info *SwaggerInfo) error {
+	if info == nil {
+		info = new(SwaggerInfo)
+	}
+
+	s := generateSpec(r.traverseSignatures(), info)
+	slog.Info("swagger: generated spec")
+
+	json, err := s.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	buffer := bytes.NewReader(json)
+
+	r.mux.Get(
+		path.Join(endpoint, "swagger.json"),
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			http.ServeContent(w, r, "swagger.json", time.Time{}, buffer)
+		},
+	)
+
+	handler := httpSwagger.Handler(httpSwagger.URL("./swagger.json"))
+
+	r.mux.Get(endpoint, handler)
+	r.mux.Get(path.Join(endpoint, "*"), handler)
+
+	slog.Info("swagger: added handler", "endpoint", endpoint)
+
+	return nil
+}
 
 // HandlerProperty represents a modification to the handler's metadata
 // (summary, description etc.) for Swagger.
@@ -69,7 +106,7 @@ type SwaggerInfo struct {
 	Version        string
 }
 
-func toSpecInfo(i SwaggerInfo) *spec.Info {
+func toSpecInfo(i *SwaggerInfo) *spec.Info {
 	return &spec.Info{
 		InfoProps: spec.InfoProps{
 			Title:          i.Title,
@@ -95,7 +132,7 @@ func toSpecInfo(i SwaggerInfo) *spec.Info {
 
 type structMap map[reflect.Type]spec.Schema
 
-func generateSpec(signatures signatures, info SwaggerInfo) *spec.Swagger {
+func generateSpec(signatures signatures, info *SwaggerInfo) *spec.Swagger {
 	var s spec.Swagger
 	s.Swagger = "2.0"
 	s.Info = toSpecInfo(info)

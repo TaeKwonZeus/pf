@@ -32,7 +32,13 @@ func TestGenerateSpec(t *testing.T) {
 	r := NewRouter()
 	Post(r, "/get", Ping)
 
-	bytes, err := generateSpec(r.traverseSignatures(), SwaggerInfo{Title: "PABLO", Version: "v0.0.0.0.0.0.0.1"}).MarshalJSON()
+	bytes, err := generateSpec(
+		r.traverseSignatures(),
+		&SwaggerInfo{
+			Title:   "PABLO",
+			Version: "v0.0.0.0.0.0.0.1",
+		},
+	).MarshalJSON()
 	if err != nil {
 		t.Fatal(err)
 	}
