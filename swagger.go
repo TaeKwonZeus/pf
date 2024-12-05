@@ -14,6 +14,9 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// AddSwagger generates the OpenAPI 2.0 spec from the handlers already created
+// in r and routes the Swagger spec page to endpoint. Only call AddSwagger
+// after routing every handler you wish displayed on the page.
 func AddSwagger(r *Router, endpoint string, info *SwaggerInfo) error {
 	if info == nil {
 		info = new(SwaggerInfo)
@@ -39,8 +42,12 @@ func AddSwagger(r *Router, endpoint string, info *SwaggerInfo) error {
 
 	handler := httpSwagger.Handler(httpSwagger.URL("./swagger.json"))
 
-	r.mux.Get(endpoint, handler)
 	r.mux.Get(path.Join(endpoint, "*"), handler)
+
+	redirect := func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, path.Join(endpoint, "index.html"), http.StatusFound)
+	}
+	r.mux.Get(endpoint, redirect)
 
 	slog.Info("swagger: added handler", "endpoint", endpoint)
 
