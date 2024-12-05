@@ -62,7 +62,7 @@ func Use(r *Router, middlewares ...func(next http.Handler) http.Handler) {
 
 // Method adds routes for path that matches the HTTP method specified by method.
 // Method also adds metadata, consisting of the request and response type,
-// as well as props, for use by Swagger and the like.
+// as well as props for use by Swagger and the like.
 func Method[Req, Res any](r *Router, method string, path string, handler Handler[Req, Res], props ...HandlerProperty) {
 	h, signature := handler.wrap(props)
 	r.mux.Method(method, path, h)
@@ -114,6 +114,48 @@ func Handle(r *Router, path string, handler http.Handler) {
 // function handlers, as they won't show up in Swagger.
 func HandleFunc(r *Router, path string, handler http.HandlerFunc) {
 	r.mux.HandleFunc(path, handler)
+}
+
+// MethodStd adds routes for path that matches the HTTP method specified by method.
+// If there are any props, MethodStd also adds metadata from props for use by
+// Swagger and the like. MethodStd is different from Method in that it uses
+// http.HandlerFunc instead of Handler.
+func MethodStd(r *Router, method string, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	r.mux.Method(method, path, handler)
+
+	if len(props) > 0 {
+		r.signatures.add(path, method, &handlerSignature{
+			props: props,
+		})
+	}
+}
+
+func GetStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodGet, path, handler, props...)
+}
+
+func PostStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodPost, path, handler, props...)
+}
+
+func PutStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodPut, path, handler, props...)
+}
+
+func DeleteStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodDelete, path, handler, props...)
+}
+
+func PatchStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodPatch, path, handler, props...)
+}
+
+func HeadStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodHead, path, handler, props...)
+}
+
+func OptionsStd(r *Router, path string, handler http.HandlerFunc, props ...HandlerProperty) {
+	MethodStd(r, http.MethodOptions, path, handler, props...)
 }
 
 // Mount mounts a sub-router along path.

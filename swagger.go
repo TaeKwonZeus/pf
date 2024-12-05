@@ -72,7 +72,7 @@ func WithDescription(description string) HandlerProperty {
 	}
 }
 
-// WithSummary adds query parameters to the handler's metadata.
+// WithQuery adds query parameters to the handler's metadata.
 func WithQuery(query ...string) HandlerProperty {
 	return func(op *spec.Operation) {
 		for _, q := range query {
@@ -193,7 +193,7 @@ func createOperation(sig *handlerSignature, structMap structMap) *spec.Operation
 	var op spec.Operation
 
 	switch sig.reqType {
-	case reflect.TypeFor[struct{}]():
+	case nil, reflect.TypeFor[struct{}]():
 	case reflect.TypeFor[*multipart.Form]():
 		op.Consumes = []string{"multipart/form-data"}
 	default:
@@ -202,7 +202,9 @@ func createOperation(sig *handlerSignature, structMap structMap) *spec.Operation
 		op.Parameters = append(op.Parameters, *spec.BodyParam("body", &req))
 	}
 
-	if sig.resType != reflect.TypeFor[struct{}]() {
+	switch sig.resType {
+	case nil, reflect.TypeFor[struct{}]():
+	default:
 		describeResponse(&op, sig.resType, structMap)
 	}
 
