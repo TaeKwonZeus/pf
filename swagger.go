@@ -86,17 +86,17 @@ func WithQuery(query ...string) HandlerProperty {
 	}
 }
 
-// WithConsumes sets the MIME type the handler expects as the request body.
-func WithConsumes(mime string) HandlerProperty {
+// WithConsumes sets the MIME types the handler expects as the request body.
+func WithConsumes(mime ...string) HandlerProperty {
 	return func(op *spec.Operation) {
-		op.Consumes = []string{mime}
+		op.Consumes = mime
 	}
 }
 
-// WithProduces sets the MIME type the handler produces as a response.
-func WithProduces(mime string) HandlerProperty {
+// WithProduces sets the MIME types the handler produces as a response.
+func WithProduces(mime ...string) HandlerProperty {
 	return func(op *spec.Operation) {
-		op.Produces = []string{mime}
+		op.Produces = mime
 	}
 }
 
