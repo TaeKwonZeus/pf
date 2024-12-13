@@ -30,8 +30,6 @@ func (h Handler[Req, Res]) wrap(props []HandlerProperty) (http.HandlerFunc, *han
 		err = h(ResponseWriter[Res]{w}, req)
 		if err != nil {
 			HandleError(w, err)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 
